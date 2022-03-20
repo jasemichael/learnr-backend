@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  app:
+    build:
+      context: .
+      target: dev
+    container_name: app
+    ports:
+      - "8080:8080"
+    volumes:
+      - ".:/app"
+    env_file: .env.development.local
+    restart: always
+    depends_on:
+      - dynamodb-local
+  setup-db:
+    build:
+      context: .
+      target: setup-db
+    profiles:
+      - tools
+    env_file: .env.development.local
+    depends_on:
+      - dynamodb-local
+  dynamodb-local:
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./docker/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
